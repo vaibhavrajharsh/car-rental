@@ -48,6 +48,13 @@ const FUEL_OPTIONS = Object.freeze([
   "Electric",
 ]);
 
+const SORT_OPTIONS = Object.freeze({
+  NONE: "none",
+  PRICE_ASC: "price_asc",
+  PRICE_DESC: "price_desc",
+});
+
+
 /* =====================================================
    Dataset
 ===================================================== */
@@ -236,6 +243,8 @@ const EmptyState = () => (
 const Models = () => {
   /* ---------------- State ---------------- */
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState(SORT_OPTIONS.NONE);
+
   const [activeCategory, setActiveCategory] = useState(
     FILTER_DEFAULTS.CATEGORY
   );
@@ -258,6 +267,11 @@ const Models = () => {
   }, []);
 
   /* ---------------- Callbacks ---------------- */
+const handleSort = useCallback((e) => {
+  setSortBy(e.target.value);
+}, []);
+
+
   const handleSearch = useCallback(
     (e) => setSearchTerm(e.target.value),
     []
@@ -280,13 +294,25 @@ const Models = () => {
 
   /* ---------------- Derived Data ---------------- */
   const filteredCars = useMemo(() => {
-    return cars.filter((car) =>
-      bySearch(car, searchTerm) &&
-      byCategory(car, activeCategory) &&
-      byFuel(car, fuelType) &&
-      byPrice(car, maxPrice)
-    );
-  }, [searchTerm, activeCategory, fuelType, maxPrice]);
+  const result = cars.filter((car) =>
+    bySearch(car, searchTerm) &&
+    byCategory(car, activeCategory) &&
+    byFuel(car, fuelType) &&
+    byPrice(car, maxPrice)
+  );
+
+  if (sortBy === SORT_OPTIONS.PRICE_ASC) {
+    return [...result].sort((a, b) => a.price - b.price);
+  }
+
+  if (sortBy === SORT_OPTIONS.PRICE_DESC) {
+    return [...result].sort((a, b) => b.price - a.price);
+  }
+
+  return result;
+}, [searchTerm, activeCategory, fuelType, maxPrice, sortBy]);
+
+
 
   /* ---------------- Render ---------------- */
   return (
@@ -311,44 +337,80 @@ const Models = () => {
         {isLoading ? (
           <SkeletonFilterBar />
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12">
-            <div className="relative md:col-span-2">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                value={searchTerm}
-                onChange={handleSearch}
-                placeholder="Search car models..."
-                className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-zinc-900 border rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-12">
+              {/* Search */}
+              <div className="relative md:col-span-2">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  value={searchTerm}
+                  onChange={handleSearch}
+                  placeholder="Search car models..."
+                  className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-zinc-900 border rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition"
+                />
+              </div>
+
+              {/* Price */}
+              <div>
+                <label className="text-sm flex items-center gap-2 mb-1 text-gray-600 dark:text-zinc-400">
+                  <Filter className="w-4 h-4" />
+                  Max Price (${maxPrice})
+                </label>
+                <input
+                  type="range"
+                  min={PRICE_CONFIG.MIN}
+                  max={PRICE_CONFIG.MAX}
+                  step={PRICE_CONFIG.STEP}
+                  value={maxPrice}
+                  onChange={handlePrice}
+                  className="w-full h-2 bg-gray-200 dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer
+        [&::-webkit-slider-thumb]:appearance-none
+        [&::-webkit-slider-thumb]:h-4
+        [&::-webkit-slider-thumb]:w-4
+        [&::-webkit-slider-thumb]:rounded-full
+        [&::-webkit-slider-thumb]:bg-orange-500"
+                />
+              </div>
+
+              {/* Fuel */}
+              <select
+                value={fuelType}
+                onChange={handleFuel}
+                className="p-3 rounded-xl bg-gray-50 dark:bg-zinc-900 border focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition"
+              >
+                {FUEL_OPTIONS.map((fuel) => (
+                  <option key={fuel}>{fuel}</option>
+                ))}
+              </select>
+
+              {/* Sort */}
+              <select
+                value={sortBy}
+                onChange={handleSort}
+                className="p-3 rounded-xl bg-gray-50 dark:bg-zinc-900 border focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition"
+              >
+                <option value={SORT_OPTIONS.NONE}>Sort By</option>
+                <option value={SORT_OPTIONS.PRICE_ASC}>Price: Low → High</option>
+                <option value={SORT_OPTIONS.PRICE_DESC}>Price: High → Low</option>
+              </select>
             </div>
 
-            <div>
-              <label className="text-sm flex items-center gap-2 mb-1 text-gray-600 dark:text-zinc-400">
-                <Filter className="w-4 h-4" />
-                Max Price (${maxPrice})
-              </label>
-              <input
-                type="range"
-                min={PRICE_CONFIG.MIN}
-                max={PRICE_CONFIG.MAX}
-                step={PRICE_CONFIG.STEP}
-                value={maxPrice}
-                onChange={handlePrice}
-                className="w-full h-2 bg-gray-200 dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-orange-500"
-              />
-            </div>
-
-            <select
-              value={fuelType}
-              onChange={handleFuel}
-              className="p-3 rounded-xl bg-gray-50 dark:bg-zinc-900 border focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition"
-            >
-              {FUEL_OPTIONS.map((fuel) => (
-                <option key={fuel}>{fuel}</option>
-              ))}
-            </select>
-          </div>
         )}
+
+        <div className="flex justify-end mb-6">
+          <button
+            onClick={() => {
+              setSearchTerm("");
+              setActiveCategory(FILTER_DEFAULTS.CATEGORY);
+              setFuelType(FILTER_DEFAULTS.FUEL);
+              setMaxPrice(FILTER_DEFAULTS.PRICE);
+              setSortBy(SORT_OPTIONS.NONE);
+            }}
+            className="text-sm px-4 py-2 rounded-lg border border-gray-300 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-800 transition"
+          >
+            Clear Filters
+          </button>
+        </div>
+
 
         {/* CATEGORY FILTERS - Show skeleton while loading */}
         {isLoading ? (
