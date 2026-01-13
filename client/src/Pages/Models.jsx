@@ -132,8 +132,20 @@ const byFuel = (car, fuel) =>
 
 const byPrice = (car, max) => car.price <= max;
 
-const bySearch = (car, term) =>
-  safeIncludes(car.name, term);
+const bySearch = (car, term) => {
+  if (!term) return true;
+  const normalizedTerm = normalize(term);
+  
+  return (
+    safeIncludes(car.name, term) ||
+    safeIncludes(car.category, term) ||
+    safeIncludes(car.features.fuel, term) ||
+    safeIncludes(car.features.seats, term) ||
+    safeIncludes(car.features.luggage, term) ||
+    (normalizedTerm.includes('seater') && car.features.seats === normalizedTerm.replace(/\D/g, '')) ||
+    (normalizedTerm.includes('seat') && car.features.seats === normalizedTerm.replace(/\D/g, ''))
+  );
+};
 
 /* =====================================================
    Skeleton Loader Component
@@ -344,7 +356,7 @@ const handleSort = useCallback((e) => {
                 <input
                   value={searchTerm}
                   onChange={handleSearch}
-                  placeholder="Search car models..."
+                  placeholder="Search by name, category, fuel, seats..."
                   className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-zinc-900 border rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition"
                 />
               </div>
