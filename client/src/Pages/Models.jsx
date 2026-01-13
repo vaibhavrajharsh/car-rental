@@ -16,6 +16,7 @@ import {
   Search,
   Filter
 } from "lucide-react";
+import CarDetailModal from "../components/default/CarDetailModal";
 
 /* =====================================================
    App Constants
@@ -255,6 +256,8 @@ const Models = () => {
     FILTER_DEFAULTS.PRICE
   );
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedCar, setSelectedCar] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   /* ---------------- Simulate Data Loading ---------------- */
   useEffect(() => {
@@ -448,7 +451,11 @@ const handleSort = useCallback((e) => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.08 }}
-                className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300"
+                className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 cursor-pointer"
+                onClick={() => {
+                  setSelectedCar(car);
+                  setIsModalOpen(true);
+                }}
               >
                 <div className="relative h-56 overflow-hidden">
                   <img
@@ -523,6 +530,14 @@ const handleSort = useCallback((e) => {
           </motion.div>
         )}
       </div>
+
+      {/* Car Detail Modal */}
+      {isModalOpen && selectedCar && (
+        <CarDetailModal 
+          car={selectedCar} 
+          onClose={() => setIsModalOpen(false)} 
+        />
+      )}
     </div>
   );
 };
