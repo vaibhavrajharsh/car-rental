@@ -83,14 +83,14 @@ useEffect(() => {
   e.preventDefault();
   setError(null);
 
-  // 1️⃣ Password match check
+  // Password match check
   if (formData.password !== formData.confirmPassword) {
     setError("Passwords do not match!");
     return;
   }
 
   try {
-    // 2️⃣ Firebase Email/Password Signup
+    //Firebase Email/Password Signup
     const userCredential = await createUserWithEmailAndPassword(
       auth,
       formData.email,
@@ -100,9 +100,9 @@ useEffect(() => {
     const user = userCredential.user;
     setUser(user);
 
-    console.log("✅ Firebase signup success:", user.email);
+    console.log("Firebase signup success:", user.email);
 
-    // 3️⃣ Call backend to send greeting mail
+    // Call backend to send greeting mail
     const res = await fetch("http://localhost:5000/api/mail/welcome", {
       method: "POST",
       headers: {
@@ -110,21 +110,21 @@ useEffect(() => {
       },
       body: JSON.stringify({
         email: user.email,
-        name: user.email.split("@")[0], // simple name
+        name: user.email.split("@")[0], 
       }),
     });
 
     if (!res.ok) {
-      console.warn("⚠️ Signup done but mail failed");
+      console.warn("⚠️Signup done but mail failed");
     } else {
-      console.log("📧 Greeting mail sent successfully");
+      console.log("📧Greeting mail sent successfully");
     }
 
-    alert("Registration successful! Welcome email sent 🎉");
+    alert("Registration successful! Welcome 🎉");
     navigate("/profile");
 
   } catch (error) {
-    console.error("🔥 Signup error:", error.code, error.message);
+    console.error("Signup error:", error.code, error.message);
 
     // User-friendly messages
     if (error.code === "auth/email-already-in-use") {
