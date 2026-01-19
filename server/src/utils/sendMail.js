@@ -128,7 +128,7 @@ export const sendWelcomeMail = async (email, name) => {
   await transporter.sendMail({
     from: `"Car Rental 🚗" <${process.env.MAIL_USER}>`,
     to: email,
-    subject: "🎉 Welcome to Car Rental – Let’s Get You Moving!",
+    subject: "🎉 Welcome to Car Rental – Let’s Get You Moving!!",
     html: htmlTemplate,
   });
 };
